@@ -27,8 +27,6 @@ void setup() {
     Serial.print(F("\r\nOSC did not start"));
     while (1); // Halt
   }
-  Serial.print(F("\r\nPS4 USB Library Started"));
-
 }
 void loop() {
   Usb.Task();
