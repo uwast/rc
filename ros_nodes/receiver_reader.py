@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 import rospy
 from sensor_msgs.msg import Joy
+import sys
       
 import time
 import serial
-
+if len(sys.argv) == 1:
+    print "Must give serial port"
+    sys.exit()
 ser = serial.Serial(
-port='/dev/ttyUSB0',
+port=sys.argv[1],
 baudrate = 9600,
 parity=serial.PARITY_NONE,
 stopbits=serial.STOPBITS_ONE,
