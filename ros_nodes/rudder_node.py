@@ -11,7 +11,7 @@ def callback(data):
     pub = rospy.Publisher('rudder', Float32, queue_size=10)
 
     position_msg = Float32()
-    position_msg.data= (90+(60*data.axes[0]))
+    position_msg.data = (90 + (60 * data.axes[0]))
     pub.publish(position_msg)
 
     
@@ -23,6 +23,6 @@ def listener():
 
 if __name__ == '__main__':
     try:
-    	listener()
+        listener()
     except rospy.ROSInterruptException:
-	pass
+        pass
