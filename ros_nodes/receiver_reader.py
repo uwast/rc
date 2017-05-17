@@ -16,7 +16,7 @@ stopbits=serial.STOPBITS_ONE,
 bytesize=serial.EIGHTBITS,
 timeout=1
 )
-counter=0
+counter = 0
 
 class parse_receiver:
 
@@ -24,15 +24,17 @@ class parse_receiver:
         data = data.replace('st', "")
         data = data.replace('en', "")
         data = data.replace('\r\n', "")
-        newdata = data.split('\t', 19)
-        del newdata[19]
+        self.data_list = data.split('\t')
+
+    def parse(self):
+        del self.data_list[19]
         self.axes = []
         self.buttons = []
         temp1 = newdata[:8]
         temp2 = []
 
         for i in range(8,19):
-             temp2.append(newdata[i])
+            temp2.append(newdata[i])
 
         for x in temp1:
             if x[0] is "-":
@@ -51,25 +53,29 @@ class parse_receiver:
 			else:
 				x = int(x)
 			self.buttons.append(x)
-		
+
+    def length(self):
+        return len(self.data_list)
 
 def start():
     global pub
     pub = rospy.Publisher('joy', Joy, queue_size=10)
-
     rospy.init_node('receiver_to_joy', anonymous=True)
     rate = rospy.Rate(10)
+
     while not rospy.is_shutdown():
-    	x = ser.readline()
-	while (len(x)<50 or x[:2] != "st" or x[-5:] != '\ten\r\n'):
-		x = ser.readline()
-	rec_data = parse_receiver(x)
-	joy = Joy()
-	joy.header.stamp = rospy.get_rostime()
+        while data_length != 20:
+            while x[:2] != "st" or x[-5:] != '\ten\r\n':
+                x = ser.readline()
+            receiver = parse_receiver(x)
+            data_length = receiver.length()
+        receiver.parse()
+        joy = Joy()
+        joy.header.stamp = rospy.get_rostime()
         joy.axes = rec_data.axes
         joy.buttons = rec_data.buttons
         pub.publish(joy)
-	rate.sleep()
+        rate.sleep()
 
 
 if __name__ == '__main__':
