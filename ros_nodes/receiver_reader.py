@@ -30,11 +30,11 @@ class parse_receiver:
         del self.data_list[19]
         self.axes = []
         self.buttons = []
-        temp1 = newdata[:8]
+        temp1 = self.data_list[:8]
         temp2 = []
 
         for i in range(8,19):
-            temp2.append(newdata[i])
+            temp2.append(self.data_list[i])
 
         for x in temp1:
             if x[0] is "-":
@@ -61,19 +61,21 @@ def start():
     global pub
     pub = rospy.Publisher('joy', Joy, queue_size=10)
     rospy.init_node('receiver_to_joy', anonymous=True)
-    rate = rospy.Rate(10)
-
+    rate = rospy.Rate(100)
+    count = 0
     while not rospy.is_shutdown():
-        while data_length != 20:
-            while x[:2] != "st" or x[-5:] != '\ten\r\n':
-                x = ser.readline()
-            receiver = parse_receiver(x)
-            data_length = receiver.length()
+        data_length = 0
+        x= ""
+        while x[:2] != "st" or x[-5:] != '\ten\r\n' or data_length != 20:
+            x = ser.readline()
+            if x[:2] == "st" and x[-5:] == '\ten\r\n':
+                receiver = parse_receiver(x)
+                data_length = receiver.length()
         receiver.parse()
         joy = Joy()
         joy.header.stamp = rospy.get_rostime()
-        joy.axes = rec_data.axes
-        joy.buttons = rec_data.buttons
+        joy.axes = receiver.axes
+        joy.buttons = receiver.buttons
         pub.publish(joy)
         rate.sleep()
 
