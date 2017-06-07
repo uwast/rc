@@ -51,7 +51,7 @@ void loop() {
         axes[5] = float(PS4.getAnalogButton(R2));
         
       
-        if (PS4.getButtonClick(UP)) {
+        if (PS4.getButtonPress(UP)) {
             PS4.setLed(Blue);
             axes[7] =1.00;
         }
@@ -62,38 +62,38 @@ void loop() {
         else
             axes[7] =0;
           
-        if (PS4.getButtonClick(LEFT)) {
+        if (PS4.getButtonPress(LEFT)) {
             PS4.setLed(Yellow);
             axes[6] = 1.00;
         }
-        else if (PS4.getButtonClick(RIGHT)) {
+        else if (PS4.getButtonPress(RIGHT)) {
             PS4.setLed(Green);
             axes[6] = -1.00;
         }
         else 
             axes[6] = 0;
           
-        if (PS4.getButtonClick(OPTIONS)) {
+        if (PS4.getButtonPress(OPTIONS)) {
             buttons[7] = 1;
         }
         else 
             buttons[7] = 0;
-        if (PS4.getButtonClick(SHARE)) {
+        if (PS4.getButtonPress(SHARE)) {
             buttons[6] = 1;
         }
         else 
             buttons[6] = 0;
           
-        buttons[0] = PS4.getButtonClick(CROSS);
-        buttons[1] = PS4.getButtonClick(SQUARE);
-        buttons[2] = PS4.getButtonClick(CIRCLE);
-        buttons[3] = PS4.getButtonClick(TRIANGLE);      
-        buttons[9] = PS4.getButtonClick(L3);
-        buttons[10] = PS4.getButtonClick(R3);
-        buttons[4] = PS4.getButtonClick(L1);  
-        buttons[5] = PS4.getButtonClick(R1);
+        buttons[0] = PS4.getButtonPress(CROSS);
+        buttons[1] = PS4.getButtonPress(SQUARE);
+        buttons[2] = PS4.getButtonPress(CIRCLE);
+        buttons[3] = PS4.getButtonPress(TRIANGLE);      
+        buttons[9] = PS4.getButtonPress(L3);
+        buttons[10] = PS4.getButtonPress(R3);
+        buttons[4] = PS4.getButtonPress(L1);  
+        buttons[5] = PS4.getButtonPress(R1);
         
-        if (PS4.getButtonClick(PS)) {
+        if (PS4.getButtonPress(PS)) {
             PS4.setLedFlash(10,10);
             buttons[8] = 1;
         }
