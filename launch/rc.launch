@@ -1,6 +1,6 @@
 <launch>
-<arg name="controller" default="/dev/ttyACM0" />
-<arg name="rudder" default="/dev/ttyACM1" />
+<arg name="controller" default="/dev/ttyUSB0" />
+<arg name="rudder" default="/dev/ttyACM0" />
   <node pkg="boat_rc" type="receiver_reader.py" 
     args="$(arg controller)" name="receiver" output="screen">
   </node>

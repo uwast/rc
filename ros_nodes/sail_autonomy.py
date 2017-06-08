@@ -10,6 +10,7 @@ autonomy = False
 def callback(data):
     global request
     global autonomy
+    rate = rospy.Rate(100)
 
     if data.buttons[5] == 1 and data.buttons[4] == 0:
         request = "Autonomy"
@@ -23,13 +24,12 @@ def callback(data):
     pub = rospy.Publisher('autonomy', Bool, queue_size=10)
 
     pub.publish(autonomy)
+    rate.sleep()
 
-    
 def listener():
     rospy.init_node('autonomy', anonymous=True)
     rospy.Subscriber('joy', Joy, callback)
     rospy.spin()
-    
 
 if __name__ == '__main__':
     try:

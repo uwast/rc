@@ -16,20 +16,21 @@ def callback(data):
     global position
     global request
     global autonomy
+    rate = rospy.Rate(100)
 
     if autonomy is False:
         if data.axes[6] < 0:
             request = "Broad"
-            position = 540  # 1.5 turns
+            position = 1500  # 1.5 turns
         elif data.axes[6] > 0:
             request = "Beam"
-            position = 1080  # Three turns
+            position = 1100  # Three turns
         elif data.axes[7] < 0:
             request = "Run"
-            position = 0  # Fully out
+            position = 1600  # Fully out
         elif data.axes[7] > 0:
             request = "Close"
-            position = 1800  # Five Turns
+            position = 0  # Five Turns
         else:
             request = "Hold"
 
@@ -37,6 +38,7 @@ def callback(data):
     global pub
     pub = rospy.Publisher('winch', Int32, queue_size=10)
     pub.publish(position)
+    rate.sleep()
 
 def callback_autonomy(setting):
     global autonomy
@@ -48,20 +50,20 @@ def callback_wind(direction):
     global autonomy
     global wind_dir
     wind_dir = direction.data
+    rate = rospy.Rate(100)
 
     if autonomy is True:
-        if wind_dir < max_angle or wind_dir > (360 - max_angle):
-            position = 1800  # Five turns, close hauled
-        elif wind_dir >= 180:
-
-            position = (1800 / (180 - max_angle)) * (wind_dir - 180)
-        else:
-            position = 1800 - ((1800 / (180 - max_angle)) * (wind_dir-max_angle))
-
+        if wind_dir < (180 + max_angle) and wind_dir > (180 - max_angle):
+            position = 0  # Five turns, close hauled
+        elif wind_dir >= (180 - max_angle):
+            position = (600 / (180 - max_angle)) * abs(wind_dir-(max_angle+ 180)) + 1000
+	else:
+	    position = (600 / (180 - max_angle)) * abs(wind_dir-(180 - max_angle)) + 1000
     rospy.loginfo(rospy.get_caller_id() + " Autonomy Request: %f", position)
     global pub
     pub = rospy.Publisher('winch', Int32, queue_size=10)
     pub.publish(position)
+    rate.sleep()
 
 def listener():
     rospy.init_node('joy_to_winch', anonymous=True)
