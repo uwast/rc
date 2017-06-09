@@ -6,16 +6,23 @@ from std_msgs.msg import Bool
 import time
 
 tacking = False
+position = 90
+
+
 def callback(data):
     global tacking
-    if not tacking:
-        rospy.loginfo(rospy.get_caller_id() + " Read value: %f", data.axes[0])
-        global pub
-        pub = rospy.Publisher('rudder', Float32, queue_size=10)
+    global position
 
+    if not tacking:
+        old_position = position
+        pub = rospy.Publisher('rudder', Float32, queue_size=10)
         position_msg = Float32()
         position_msg.data = (90 - (60 * data.axes[0]))
-        pub.publish(position_msg)
+        if abs(position_msg.data - old_position) > 5:
+            pub.publish(position_msg)
+            rospy.loginfo(rospy.get_caller_id() + " Read value: %f", data.axes[0])
+            position = position_msg.data
+
 
 def tacking_callback(tack):
     global tacking
