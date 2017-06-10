@@ -11,11 +11,15 @@ wind_dir = 0
 request = "Hold"
 position = 0
 max_angle = 30
+pub = rospy.Publisher('winch', Int32, queue_size=10)
+
 
 def callback(data):
     global position
     global request
     global autonomy
+    global pub
+
     rate = rospy.Rate(100)
 
     if autonomy is False:
@@ -33,37 +37,39 @@ def callback(data):
             position = 0  # Five Turns
         else:
             request = "Hold"
-
-    rospy.loginfo(rospy.get_caller_id() + " Controller Request: %s", request)
-    global pub
-    pub = rospy.Publisher('winch', Int32, queue_size=10)
     pub.publish(position)
     rate.sleep()
+
 
 def callback_autonomy(setting):
     global autonomy
     autonomy = setting.data
     rospy.loginfo(rospy.get_caller_id() + " Autonomy Mode: %r", autonomy)
 
+
 def callback_wind(direction):
     global position
     global autonomy
     global wind_dir
+    global pub
+
     wind_dir = direction.data
     rate = rospy.Rate(100)
 
     if autonomy is True:
         if wind_dir < (180 + max_angle) and wind_dir > (180 - max_angle):
-            position = 0  # Five turns, close hauled
+            new_position = 0
         elif wind_dir >= (180 - max_angle):
-            position = (600 / (180 - max_angle)) * abs(wind_dir-(max_angle+ 180)) + 1000
-	else:
-	    position = (600 / (180 - max_angle)) * abs(wind_dir-(180 - max_angle)) + 1000
-    rospy.loginfo(rospy.get_caller_id() + " Autonomy Request: %f", position)
-    global pub
-    pub = rospy.Publisher('winch', Int32, queue_size=10)
-    pub.publish(position)
+           new_position = (600 / (180 - max_angle)) * abs(wind_dir-(max_angle + 180)) + 1000
+        else:
+            new_position = (600 / (180 - max_angle)) * abs(wind_dir-(180 - max_angle)) + 1000
+        if abs(new_position - position) > 100:
+            position = new_position
+            pub.publish(position)
+            rospy.loginfo(rospy.get_caller_id() + " Autonomy Request: %f", position)
+
     rate.sleep()
+
 
 def listener():
     rospy.init_node('joy_to_winch', anonymous=True)

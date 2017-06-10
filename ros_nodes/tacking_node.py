@@ -8,60 +8,83 @@ from std_msgs.msg import Float32
 import time
 
 cancel = False
-tacking = False
-wind_dir = 180
+tack_request = False
+tacking_direction = 0
+pub1 = rospy.Publisher('tacking', Bool, queue_size=10)
+pub = rospy.Publisher('rudder', Float32, queue_size=10)
+position = 90.0
+wind_dir = 0
 
 def callback(data):
     global cancel
-    global tacking
-
-    if data.buttons[0] and not tacking: #x is pressed
-        tacking = True
-        rospy.loginfo(rospy.get_caller_id() + "Tack requested.")
-        tack()
-
-    elif data.buttons[2] and not cancel and tacking:
-        cancel = True
-        rospy.loginfo(rospy.get_caller_id() + "Tack cancelled")
-
-
-def tack():
+    global tacking_direction
     global pub1
-    pub1 = rospy.Publisher('tacking', Bool, queue_size=10)
-    pub1.publish(True)
-
-    global tacking
-    global cancel
-    global wind_dir
     global pub
-    pub = rospy.Publisher('rudder', Float32, queue_size=10)
-    rate = rospy.Rate(100)
+    global position
+    global wind_dir
 
-    if(wind_dir > 180 and not cancel):
-        while(wind_dir>150):
-            position_msg = Float32()
-            position_msg.data = 30.0
-            pub.publish(position_msg)
-            rate.sleep()
-
-    else:
-        while(wind_dir<210 and not cancel):
-            position_msg = Float32()
-            position_msg.data = 150.0
-            pub.publish(position_msg)
-            rate.sleep()
-
-    tacking = False
-    cancel = False
-    position_msg = Float32()
-    position_msg.data = 90.0
-    pub1.publish(False)
+    if data.buttons[0] and tacking_direction == 0: #x is pressed
+        rospy.loginfo(rospy.get_caller_id() + "Tack requested.")
+	if wind_dir <180:
+	    pub.publish(30.0)
+	    position = 30.0
+	    tacking_direction = -1
+	else:
+	    pub.publish(150.0)
+	    position = 150.0
+	    tacking_direction = 1
+	
+	pub1.publish(True)
+    
+    elif data.buttons[2] and not tacking_direction == 0:
+        tacking_direction = 0
+        rospy.loginfo(rospy.get_caller_id() + "Tack cancelled")
+        position_msg = Float32()
+        position_msg.data = 90.0
+        pub.publish(position_msg)
+        pub1.publish(False)
+        position = position_msg.data
 
 
 def callback_wind(direction):
+    global pub1
+    global pub
+    global cancel
+    global tacking_direction
+    global position
     global wind_dir
+
+    rate = rospy.Rate(100)
+    position_msg = Float32()
     wind_dir = direction.data
 
+    if tacking_direction == 1:
+        if direction.data > 150:
+            if not position == 150.0:
+                position_msg.data = 150.0
+		position = position_msg.data
+                pub.publish(position_msg)
+            rate.sleep()
+        else:
+            tacking_direction = 0
+            position_msg.data = 90.0
+            pub.publish(position_msg)
+            pub1.publish(False)
+
+    elif tacking_direction == -1:
+        if direction.data < 210:
+            if not position == 30.0:
+                position_msg.data = 30.0
+                position = position_msg.data
+		pub.publish(position_msg)
+            rate.sleep()
+        else:
+            tacking_direction = 0
+            position_msg.data = 90.0
+            pub.publish(position_msg)
+            pub1.publish(False)
+
+    rate.sleep()
 
 
 def listener():
