@@ -37,7 +37,7 @@ def callback(data):
             position = 0  # Five Turns
         else:
             request = "Hold"
-
+    pub.publish(position)
     rate.sleep()
 
 
@@ -63,7 +63,7 @@ def callback_wind(direction):
            new_position = (600 / (180 - max_angle)) * abs(wind_dir-(max_angle + 180)) + 1000
         else:
             new_position = (600 / (180 - max_angle)) * abs(wind_dir-(180 - max_angle)) + 1000
-        if abs(new_position - position) > 5:
+        if abs(new_position - position) > 100:
             position = new_position
             pub.publish(position)
             rospy.loginfo(rospy.get_caller_id() + " Autonomy Request: %f", position)

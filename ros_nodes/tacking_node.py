@@ -13,21 +13,30 @@ tacking_direction = 0
 pub1 = rospy.Publisher('tacking', Bool, queue_size=10)
 pub = rospy.Publisher('rudder', Float32, queue_size=10)
 position = 90.0
+wind_dir = 0
 
 def callback(data):
     global cancel
-    global tack_request
     global tacking_direction
     global pub1
     global pub
     global position
+    global wind_dir
 
-    if data.buttons[0] and not tack_request and tacking_direction == 0: #x is pressed
-        tack_request = True
+    if data.buttons[0] and tacking_direction == 0: #x is pressed
         rospy.loginfo(rospy.get_caller_id() + "Tack requested.")
-
-    elif data.buttons[2] and (tack_request or not tacking_direction == 0):
-        tack_request = False
+	if wind_dir <180:
+	    pub.publish(30.0)
+	    position = 30.0
+	    tacking_direction = -1
+	else:
+	    pub.publish(150.0)
+	    position = 150.0
+	    tacking_direction = 1
+	
+	pub1.publish(True)
+    
+    elif data.buttons[2] and not tacking_direction == 0:
         tacking_direction = 0
         rospy.loginfo(rospy.get_caller_id() + "Tack cancelled")
         position_msg = Float32()
@@ -40,33 +49,20 @@ def callback(data):
 def callback_wind(direction):
     global pub1
     global pub
-    global tack_request
     global cancel
     global tacking_direction
     global position
+    global wind_dir
 
     rate = rospy.Rate(100)
     position_msg = Float32()
+    wind_dir = direction.data
 
-    if tack_request:
-        if direction.data > 180:
-            tacking_direction = 1
-            position_msg.data = 150.0
-
-        else:
-            tacking_direction = -1
-            position_msg.data = 30.0
-
-        tack_request = False
-        pub.publish(position_msg)
-        rate.sleep()
-        pub1.publish(True)
-        position = position_msg.data
-
-    elif tacking_direction == 1:
+    if tacking_direction == 1:
         if direction.data > 150:
             if not position == 150.0:
                 position_msg.data = 150.0
+		position = position_msg.data
                 pub.publish(position_msg)
             rate.sleep()
         else:
@@ -79,7 +75,8 @@ def callback_wind(direction):
         if direction.data < 210:
             if not position == 30.0:
                 position_msg.data = 30.0
-                pub.publish(position_msg)
+                position = position_msg.data
+		pub.publish(position_msg)
             rate.sleep()
         else:
             tacking_direction = 0
