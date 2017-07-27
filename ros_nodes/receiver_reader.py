@@ -2,6 +2,7 @@
 import rospy
 from sensor_msgs.msg import Joy
 import sys
+from struct import *
       
 import time
 import serial
@@ -21,41 +22,59 @@ counter = 0
 class parse_receiver:
 
     def __init__(self, data):
-        data = data.replace('st', "")
-        data = data.replace('en', "")
+        data = data.replace('s ', "")
+        data = data.replace(' e', "")
         data = data.replace('\r\n', "")
-        self.data_list = data.split('\t')
+        #data = data.replace('\x', '')
+        self.data_list = data.split(' ')
 
     def parse(self):
-        del self.data_list[19]
-        self.axes = []
-        self.buttons = []
-        temp1 = self.data_list[:8]
-        temp2 = []
+        try:
+#            del self.data_list[19]
+            self.axes = []
+            self.buttons = []
+            temp1 = self.data_list[:4]
+            temp2 = []
+            temp3 = []
 
-        for i in range(8,19):
-            temp2.append(self.data_list[i])
+            for i in range(4, 8):
+                temp2.append(self.data_list[i])
 
-        for x in temp1:
-            if x[0] is "-":
-                x = x.replace("-","")
-                x = float(x)
-                x = -1*x
-            else:
-                x = float(x)
-            self.axes.append(x)
+            for j in range(8,19):
+                temp3.append(self.data_list[j])
 
-        for x in temp2:
-			if x[0] is "-":
-				x = x.replace("-","")
-				x = int(x)
-				x = -1*x
-			else:
-				x = int(x)
-			self.buttons.append(x)
+            for x in temp1:
+                if x is not '':
+                    x = unpack('B', x)
+                    x = float(x[0])
+                    x = (x / 255.0 * 2)-1
+                    self.axes.append(x)
+                else:
+                    self.axes.append(0.00)
+
+            for x in temp2:
+                if x is not '':
+                    x = unpack('B', x)
+                    x = x[0]
+                    x = x - 1
+                    self.axes.append(x)
+                else:
+                    self.axes.append(1)
+
+            for x in temp3:
+                if x is not '':
+                    x = unpack('B', x)
+                    x = x[0]
+                    self.buttons.append(x)
+                else:
+                    self.buttons.append(0)
+
+        except:
+            print "Caught Exception"
 
     def length(self):
         return len(self.data_list)
+	
 
 def start():
     global pub
@@ -66,9 +85,9 @@ def start():
     while not rospy.is_shutdown():
         data_length = 0
         x= ""
-        while x[:2] != "st" or x[-5:] != '\ten\r\n' or data_length != 20:
+        while x[:2] != "s " or x[-4:] != ' e\r\n' or data_length != 19:
             x = ser.readline()
-            if x[:2] == "st" and x[-5:] == '\ten\r\n':
+            if x[:2] == "s " and x[-4:] == ' e\r\n':
                 receiver = parse_receiver(x)
                 data_length = receiver.length()
         receiver.parse()

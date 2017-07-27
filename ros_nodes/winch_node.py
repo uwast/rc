@@ -20,7 +20,7 @@ def callback(data):
     global autonomy
     global pub
 
-    rate = rospy.Rate(100)
+    rate = rospy.Rate(10)
 
     if autonomy is False:
         if data.axes[6] < 0:
@@ -54,7 +54,7 @@ def callback_wind(direction):
     global pub
 
     wind_dir = direction.data
-    rate = rospy.Rate(100)
+    rate = rospy.Rate(10)
 
     if autonomy is True:
         if wind_dir < (180 + max_angle) and wind_dir > (180 - max_angle):

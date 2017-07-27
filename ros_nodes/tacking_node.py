@@ -54,7 +54,7 @@ def callback_wind(direction):
     global position
     global wind_dir
 
-    rate = rospy.Rate(100)
+    rate = rospy.Rate(10)
     position_msg = Float32()
     wind_dir = direction.data
 

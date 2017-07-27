@@ -10,7 +10,7 @@ autonomy = False
 def callback(data):
     global request
     global autonomy
-    rate = rospy.Rate(100)
+    rate = rospy.Rate(10)
 
     if data.buttons[5] == 1 and data.buttons[4] == 0:
         request = "Autonomy"

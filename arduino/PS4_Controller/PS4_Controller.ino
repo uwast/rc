@@ -6,8 +6,8 @@
 #endif
 
 
-int buttons[11];
-float axes[8];
+byte buttons[11];
+byte axes[8];
 USB Usb;
 PS4USB PS4(&Usb);
 
@@ -35,15 +35,15 @@ void loop() {
             PS4.setRumbleOn(0, 0);
         }
         if (PS4.getAnalogHat(LeftHatY) > 137 || PS4.getAnalogHat(LeftHatY) < 117)
-            axes[1] = float(PS4.getAnalogHat(LeftHatY));
+            axes[1] = PS4.getAnalogHat(LeftHatY);
         else
             axes[1] = 128;
         if (PS4.getAnalogHat(RightHatX) > 137 || PS4.getAnalogHat(RightHatX) < 117)
-           axes[3] = float(PS4.getAnalogHat(RightHatX));
+           axes[3] = PS4.getAnalogHat(RightHatX);
         else
             axes[3] = 128;
         if (PS4.getAnalogHat(RightHatY) > 137 || PS4.getAnalogHat(RightHatY) < 117)
-            axes[4] = float(PS4.getAnalogHat(RightHatY));
+            axes[4] = PS4.getAnalogHat(RightHatY);
         else
             axes[4] = 128;
       
@@ -53,25 +53,25 @@ void loop() {
       
         if (PS4.getButtonPress(UP)) {
             PS4.setLed(Blue);
-            axes[7] =1.00;
+            axes[7] =2;
         }
-        else if (PS4.getButtonClick(DOWN)) {
+        else if (PS4.getButtonPress(DOWN)) {
             PS4.setLed(Red);
-            axes[7] =-1.00;
+            axes[7] =0;
         }
         else
-            axes[7] =0;
+            axes[7] =1;
           
         if (PS4.getButtonPress(LEFT)) {
             PS4.setLed(Yellow);
-            axes[6] = 1.00;
+            axes[6] = 2;
         }
         else if (PS4.getButtonPress(RIGHT)) {
             PS4.setLed(Green);
-            axes[6] = -1.00;
+            axes[6] = 0;
         }
         else 
-            axes[6] = 0;
+            axes[6] = 1;
           
         if (PS4.getButtonPress(OPTIONS)) {
             buttons[7] = 1;
@@ -103,32 +103,40 @@ void loop() {
         }
       
     
-        axes[0] = (axes[0]/255.0*2)-1;
+        //axes[0] = (axes[0]/255.0*2)-1;
         axes[1] = 255 - axes[1];
-        axes[1] = (axes[1]/255.0*2)-1;
-        axes[3] = (axes[3]/255.0*2)-1;
+        //axes[1] = (axes[1]/255.0*2)-1;
+        //axes[3] = (axes[3]/255.0*2)-1;
         axes[4] = 255 - axes[4];
-        axes[4] = (axes[4]/255.0*2)-1;
+        //axes[4] = (axes[4]/255.0*2)-1;
     
         axes[2] = 255 - axes[2];
-        axes[2] = (axes[2]/255.0*2)-1;
+        //axes[2] = (axes[2]/255.0*2)-1;
     
         axes[5] = 255 - axes[5];
-        axes[5] = (axes[5]/255.0*2)-1;
+        //axes[5] = (axes[5]/255.0*2)-1;
 
-        Serial.print("st");
-        for (int i = 0; i<8; i++){
-            Serial.print(axes[i]);
-            Serial.print("\t");
-        }
+        //String data = "s ";
         
-        for (int i = 0; i<11; i++){
-            Serial.print(buttons[i]);
-            Serial.print("\t");
+        Serial.print("s ");
+        for (int i = 0; i<8; i++){
+            Serial.write(axes[i]);
+            Serial.print(" ");
+            //data += axes[i];
+            //data += " ";
         }
-        Serial.print("en");
-          
-        Serial.println();
+        //Serial.print(b
+        for (int i = 0; i<11; i++){
+            Serial.write(buttons[i]);
+            Serial.print(" ");
+            //data += buttons[i];
+            //data += " ";
+        }
+        Serial.print("e");
+        //data +="en\r\n";
+        Serial.println();  
+        //Serial.println();
+        //Serial.print(data);
     }
-    delay(10);
+    delay(60);
 }
