@@ -1,2 +1,2 @@
-# rc
-ROS nodes and arduino code involved in sending and receiving RF commands
+# boat_rc
+ROS nodes and arduino code involved in remote control operation of the boat.
