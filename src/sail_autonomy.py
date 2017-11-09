@@ -6,29 +6,32 @@ from std_msgs.msg import Bool
 import time
 request = "Manual"
 autonomy = False
+pub = rospy.Publisher('autonomy', Bool, queue_size=10)
 
-def callback(data):
+def joy_callback(controller):
     global request
     global autonomy
+    global pub
     rate = rospy.Rate(10)
 
-    if data.buttons[5] == 1 and data.buttons[4] == 0:
+    # If R1 is pushed and L1 is not the set autonomous mode
+    if controller.buttons[5] == 1 and controller.buttons[4] == 0:
         request = "Autonomy"
         autonomy = True
-    elif data.buttons[5] == 0 and data.buttons[4] == 1:
+    # If L1 is pushed and R1 is not then set manual mode
+    elif controller.buttons[5] == 0 and controller.buttons[4] == 1:
         request = "Manual"
         autonomy = False
 
     rospy.loginfo(rospy.get_caller_id() + " Autonomy Request: %s", request)
-    global pub
-    pub = rospy.Publisher('autonomy', Bool, queue_size=10)
-
     pub.publish(autonomy)
     rate.sleep()
 
+
 def listener():
+    # Setup subscribers
     rospy.init_node('autonomy', anonymous=True)
-    rospy.Subscriber('joy', Joy, callback)
+    rospy.Subscriber('joy', Joy, joy_callback)
     rospy.spin()
 
 if __name__ == '__main__':

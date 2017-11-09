@@ -6,12 +6,14 @@ from struct import *
       
 import time
 import serial
+
+#Requires a serial port to read from
 if len(sys.argv) == 1:
     print("Must give serial port")
     sys.exit()
 ser = serial.Serial(
 port=sys.argv[1],
-baudrate = 9600,
+baudrate=9600,
 parity=serial.PARITY_NONE,
 stopbits=serial.STOPBITS_ONE,
 bytesize=serial.EIGHTBITS,
@@ -19,31 +21,34 @@ timeout=1
 )
 counter = 0
 
-class parse_receiver:
 
+class parse_receiver:
     def __init__(self, data):
+        # Each string of information sent from the controller is sent in the following format:
+        # s 4 4 4 4 4 4 4 4 e\r\n
+        # The following code deletes the start and end characters and splits the string of values into an list of values
         data = data.replace('s ', "")
         data = data.replace(' e', "")
         data = data.replace('\r\n', "")
-        #data = data.replace('\x', '')
         self.data_list = data.split(' ')
 
     def parse(self):
         try:
-#            del self.data_list[19]
             self.axes = []
             self.buttons = []
-            temp1 = self.data_list[:4]
-            temp2 = []
-            temp3 = []
+            joystick_temp = self.data_list[:4]
+            dpad_temp = []
+            button_temp = []
 
+            # Split the list of values into joystick and button controls
             for i in range(4, 8):
-                temp2.append(self.data_list[i])
+                dpad_temp.append(self.data_list[i])
 
             for j in range(8,19):
-                temp3.append(self.data_list[j])
+                button_temp.append(self.data_list[j])
 
-            for x in temp1:
+            # Map the joystick values from 0 -> 255 (as a string) to  -1.00 -> 1.00
+            for x in joystick_temp:
                 if x is not '':
                     x = unpack('B', x)
                     x = float(x[0])
@@ -52,7 +57,8 @@ class parse_receiver:
                 else:
                     self.axes.append(0.00)
 
-            for x in temp2:
+            # Map the D-pad values from -1 -> 0 -> 1 (as a string) to  0 -> 1
+            for x in dpad_temp:
                 if x is not '':
                     x = unpack('B', x)
                     x = x[0]
@@ -61,7 +67,8 @@ class parse_receiver:
                 else:
                     self.axes.append(1)
 
-            for x in temp3:
+            # Map the regular button values from 0 -> 1 (as a string) to  0 -> 1
+            for x in button_temp:
                 if x is not '':
                     x = unpack('B', x)
                     x = x[0]
@@ -74,23 +81,26 @@ class parse_receiver:
 
     def length(self):
         return len(self.data_list)
-	
+
 
 def start():
-    global pub
+    # Setup publisher for the /joy topic
     pub = rospy.Publisher('joy', Joy, queue_size=10)
     rospy.init_node('receiver_to_joy', anonymous=True)
     rate = rospy.Rate(100)
-    count = 0
+
     while not rospy.is_shutdown():
         data_length = 0
-        x= ""
-        while x[:2] != "s " or x[-4:] != ' e\r\n' or data_length != 19:
-            x = ser.readline()
-            if x[:2] == "s " and x[-4:] == ' e\r\n':
-                receiver = parse_receiver(x)
+        received_data= ""
+        # Loop to check to make sure we have received a string of proper length with the right formatting
+        while received_data[:2] != "s " or received_data[-4:] != ' e\r\n' or data_length != 19:
+            received_data = ser.readline()
+            if received_data[:2] == "s " and received_data[-4:] == ' e\r\n':
+                receiver = parse_receiver(received_data)
                 data_length = receiver.length()
+        # Once a proper packet has been received, parse it
         receiver.parse()
+        # Setup a JOY message with the parsed data and publish it
         joy = Joy()
         joy.header.stamp = rospy.get_rostime()
         joy.axes = receiver.axes
