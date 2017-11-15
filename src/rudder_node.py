@@ -7,7 +7,6 @@ from boat_nav.msg import BoatState
 import time
 
 # Declare global variables needed for the node
-tacking = False  # Whether or not we are tacking
 rudder_pos = 90  # What the rudder position is (0-180)
 cur_boat_heading = 0
 wind_heading = 0
@@ -44,13 +43,14 @@ def heading_callback(target_heading):
 	rospy.loginfo(rospy.get_caller_id() + " New rudder setpoint: %f", target_heading)
 
 	# If the current heading and the new heading are on opposite sides of the wind, we need to tack
-	if (target_heading < wind_heading and cur_boat_heading < wind_heading) or (target_heading > wind_heading and cur_boat_heading > wind_heading):
+    # HOW DO WE HANDLE 0-360 JUMP
+	if (target_heading < wind_heading and cur_boat_heading > wind_heading) or (target_heading > wind_heading and cur_boat_heading < wind_heading):
 		state.minor = BoatState.MIN_TACKING
-		boat_state_pub.publish(state)		
+		boat_state_pub.publish(state)
 		rospy.loginfo(rospy.get_caller_id() + " Boat State = 'Autonomous - Tacking'")
 		
-		controller.setTarget(target_heading)
-		while controller.isOnTarget():
+		pid_controller.setTarget(target_heading)
+		while pid_controller.isOnTarget():
 			pass
 			
 		state.minor = BoatState.MIN_PLANNING
@@ -59,16 +59,16 @@ def heading_callback(target_heading):
 	
 	# Otherwise, we don't need to tack, so simply update the controller's setpoint
 	else:		
-		controller.setSetpoint(target_heading)
+		pid_controller.setGoal(target_heading)
 
 
 
 def joy_callback(controller):
-    global tacking
     global rudder_pos
-    global pub
+    global rudder_pos_pub
+    global state
 
-    if not tacking:
+    if state.minor is not BoatState.MIN_TACKING:
         # If the boat is not currently tacking, then setup a message to send to the /rudder topic
         rudder_pos_old = rudder_pos
         position_msg = Float32()
@@ -79,21 +79,14 @@ def joy_callback(controller):
         # Only publish if the change in rudder angle is greater than 5
         if abs(position_msg.data - rudder_pos_old) > 5:
             rudder_pos_pub.publish(position_msg)
-            rospy.loginfo(rospy.get_caller_id() + " Read value: %f", data.axes[0])
+            rospy.loginfo(rospy.get_caller_id() + " Read value: %f", controller.axes[0])
             rudder_pos = position_msg.data
-
-
-def tacking_callback(tack):
-    # If tacking topic changes, update the tacking global variable to reflect that change
-    global tacking
-    tacking = tack.data
 
     
 def listener():
     # Setup subscribers
     rospy.init_node('joy_to_rudder', anonymous=True)
     rospy.Subscriber('joy', Joy, joy_callback)
-    rospy.Subscriber('tacking', Bool, tacking_callback)
     rospy.Subscriber('boat_state', BoatState, boat_state_callback)
     rospy.Subscriber('wind_heading', Float32, wind_callback)
     rospy.Subscriber('target_heading', Float32, heading_callback)
