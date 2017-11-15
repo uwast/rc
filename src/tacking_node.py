@@ -14,7 +14,7 @@ pub_rudder = rospy.Publisher('rudder', Float32, queue_size=10)
 rudder_pos = 90.0
 wind_dir = 0
 
-def callback(controller):
+def joy_callback(controller):
     global tacking_direction
     global pub_tacking
     global pub_rudder

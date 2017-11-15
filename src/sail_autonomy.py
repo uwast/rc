@@ -8,13 +8,14 @@ request = "Manual"
 autonomy = False
 pub = rospy.Publisher('autonomy', Bool, queue_size=10)
 
+
 def joy_callback(controller):
     global request
     global autonomy
     global pub
-    rate = rospy.Rate(10)
-
-    # If R1 is pushed and L1 is not the set autonomous mode
+    rate = rospy.Rate(100)
+  
+    # If R1 is pushed and L1 is not then set autonomous mode
     if controller.buttons[5] == 1 and controller.buttons[4] == 0:
         request = "Autonomy"
         autonomy = True
@@ -26,7 +27,6 @@ def joy_callback(controller):
     rospy.loginfo(rospy.get_caller_id() + " Autonomy Request: %s", request)
     pub.publish(autonomy)
     rate.sleep()
-
 
 def listener():
     # Setup subscribers
