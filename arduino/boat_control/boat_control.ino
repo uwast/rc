@@ -18,15 +18,17 @@ std_msgs::Int32 winddir;
 Servo servo_rudder;
 Servo servo_winch;
 int VaneValue;       // raw analog value from wind vane
-int CalDirection;    
+int CalDirection;    // calibrated wind value
 int LastValue;
 int count=0;
 
 void servo_cb( const std_msgs::Float32& cmd_msg){
-    servo_rudder.write(cmd_msg.data); 
+    //Write the received data directly to the rudder servo
+    servo_rudder.write(cmd_msg.data);  
 }
 
 void winch_cb( const std_msgs::Int32& pos_msg){
+    //map the rotation (0-2160 degrees) to a motor value between 1000 and 2000
     int position_msg = map(pos_msg.data, 0, 2160, 1000, 2000);
     servo_winch.writeMicroseconds(position_msg);
 }
@@ -36,13 +38,14 @@ ros::Subscriber<std_msgs::Int32> sub_winch("winch",winch_cb);
 ros::Publisher anemometer("anemometer", &winddir);
 
 void setup(){
+    // setup subscribers 
     nh.initNode();
     nh.subscribe(sub_rudder);
     nh.subscribe(sub_winch);
     nh.advertise(anemometer);
   
-    servo_rudder.attach(3); //attach it to pin 3
-    servo_winch.attach(4);
+    servo_rudder.attach(3); // attach rudder to pin 3
+    servo_winch.attach(4); // attach winch to pin 4
     LastValue = 0;
 
     pinMode(WindVanePin, INPUT);
@@ -50,6 +53,8 @@ void setup(){
 
 void loop(){
      VaneValue = analogRead(WindVanePin);
+
+     // Map 0-1023 ADC value to 0-360
      CalDirection = map(VaneValue, 0, 1023, 0, 360);
    
      if(CalDirection >= 360)
