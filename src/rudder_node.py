@@ -26,7 +26,7 @@ def joy_callback(controller):
         # Only publish if the change in rudder angle is greater than 5
         if abs(position_msg.data - rudder_pos_old) > 5:
             pub.publish(position_msg)
-            rospy.loginfo(rospy.get_caller_id() + " Read value: %f", data.axes[0])
+            rospy.loginfo(rospy.get_caller_id() + " Read value: %f", controller.axes[0])
             rudder_pos = position_msg.data
 
 

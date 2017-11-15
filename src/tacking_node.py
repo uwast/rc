@@ -26,7 +26,7 @@ def callback(controller):
         rospy.loginfo(rospy.get_caller_id() + "Tack requested.")
 
         # If a tack is requested, figure out which side we are tacking and set the rudder accordingly
-        if wind_dir <180:
+        if wind_dir < 180:
             pub_rudder.publish(30.0)
             rudder_pos = 30.0
             tacking_direction = -1
@@ -67,25 +67,25 @@ def anemometer_callback(wind_direction):
             if not rudder_pos == 150.0:
                 rudder_pos_msg.data = 150.0
                 rudder_pos = rudder_pos_msg.data
-                pub.publish(rudder_pos_msg)
+                pub_rudder.publish(rudder_pos_msg)
             rate.sleep()
         else:
             tacking_direction = 0
             rudder_pos_msg.data = 90.0
-            pub.publish(rudder_pos_msg)
-            pub1.publish(False)
+            pub_rudder.publish(rudder_pos_msg)
+            pub_tacking.publish(False)
 
     elif tacking_direction == -1:
         if direction.data < 210:
             if not rudder_pos == 30.0:
                 rudder_pos_msg.data = 30.0
                 rudder_pos = rudder_pos_msg.data
-                pub.publish(rudder_pos_msg)
+                pub_rudder.publish(rudder_pos_msg)
             rate.sleep()
         else:
             tacking_direction = 0
             rudder_pos_msg.data = 90.0
-            pub.publish(rudder_pos_msg)
+            pub_rudder.publish(rudder_pos_msg)
             pub_tacking.publish(False)
 
     rate.sleep()
