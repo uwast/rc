@@ -32,6 +32,10 @@ def joy_callback(controller):
     global wind_dir
     global state
 
+	# Make sure we're in RC control mode
+    if state.major is not BoatState.MAJ_RC:
+        return
+
     # x is pressed then request a tack
     if controller.buttons[0] and tacking_direction == 0:
         rospy.loginfo(rospy.get_caller_id() + "Tack requested.")
