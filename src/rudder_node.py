@@ -147,7 +147,7 @@ def listener():
     rospy.init_node('joy_to_rudder', anonymous=True)
     rospy.Subscriber('joy', Joy, joy_callback)
     rospy.Subscriber('boat_state', BoatState, boat_state_callback)
-    rospy.Subscriber('wind_heading', Float32, wind_callback)
+    rospy.Subscriber('anemometer', Float32, wind_callback)
     rospy.Subscriber('target_heading', Float32, target_heading_callback)
     rospy.Subscriber('gps_raw', GPS, gps_callback)
     rospy.Subscriber('rudder_pid_output', Float64, pid_callback)
