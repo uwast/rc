@@ -2,7 +2,6 @@
 import rospy
 import roslaunch
 from sensor_msgs.msg import Joy
-from std_msgs.msg import Int32
 from std_msgs.msg import Bool
 from std_msgs.msg import Float32
 from boat_nav.msg import BoatState
@@ -115,7 +114,7 @@ def listener():
     rospy.init_node('joy_to_tack', anonymous=True)
     rospy.Subscriber('boat_state', BoatState, state_callback)
     rospy.Subscriber('joy', Joy, joy_callback)
-    rospy.Subscriber('anemometer', Int32, anemometer_callback)
+    rospy.Subscriber('anemometer', Float32, anemometer_callback)
     rospy.spin()
 
 
