@@ -16,7 +16,6 @@ rudder_pos = 90.0
 wind_dir = 0
 state = 0
 
-
 # New state callback
 def state_callback(new_state):
     global state
@@ -93,6 +92,7 @@ def anemometer_callback(wind_direction):
             rudder_pos_msg.data = 90.0
             pub_rudder.publish(rudder_pos_msg)
             pub_state.publish(state)
+
 
     elif tacking_direction == -1:
         if direction.data < 210:

@@ -15,12 +15,14 @@ def state_callback(new_state):
     state = new_state
 
 
+
 def joy_callback(controller):
     global pub
     global state
     rate = rospy.Rate(10)
 
     # If R1 is pushed and L1 is not the set autonomous mode
+
     if controller.buttons[5] == 1 and controller.buttons[4] == 0:
         state.major = BoatState.MAJ_AUTONOMOUS
     # If L1 is pushed and R1 is not then set manual mode
@@ -29,7 +31,6 @@ def joy_callback(controller):
 
     pub.publish(state)
     rate.sleep()
-
 
 def listener():
     # Setup subscribers

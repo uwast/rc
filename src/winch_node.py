@@ -26,7 +26,7 @@ def joy_callback(controller):
     global state
     global pub
 
-    rate = rospy.Rate(10)
+    rate = rospy.Rate(100)
 
     # If we are not in autonomous mode, then use the Dpad to set the sail position
     if state.major is BoatState.MAJ_RC:
