@@ -19,9 +19,9 @@ pid_is_enabled = False
 rudder_pos_pub = rospy.Publisher('rudder', Float32, queue_size=10)
 boat_state_pub = rospy.Publisher('boat_state', BoatState, queue_size=10)
 
-pid_input_pub = rospy.Publisher('rudder_pid_input', Float64, queue_size=10)
-pid_enable_pub = rospy.Publisher('rudder_pid_enable', Bool, queue_size=10)
-pid_setpoint_pub = rospy.Publisher('rudder_pid_setpoint', Float64, queue_size=10)
+pid_input_pub = rospy.Publisher('rudder_pid/input', Float64, queue_size=10)
+pid_enable_pub = rospy.Publisher('rudder_pid/enable', Bool, queue_size=10)
+pid_setpoint_pub = rospy.Publisher('rudder_pid/setpoint', Float64, queue_size=10)
 
 
 # If the boat state topic changes, update local boat state
@@ -150,7 +150,7 @@ def listener():
     rospy.Subscriber('anemometer', Float32, wind_callback)
     rospy.Subscriber('target_heading', Float32, target_heading_callback)
     rospy.Subscriber('gps_raw', GPS, gps_callback)
-    rospy.Subscriber('rudder_pid_output', Float64, pid_callback)
+    rospy.Subscriber('rudder_pid/output', Float64, pid_callback)
     rospy.spin()
     
 
