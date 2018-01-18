@@ -43,7 +43,7 @@ def gps_callback(gps):
 	cur_boat_heading = gps.track
 	heading_msg = Float64()
 	heading_msg.data = cur_boat_heading
-	boat_heading_pub.publish(heading_msg)
+	pid_input_pub.publish(heading_msg)
 	# Don't loginfo here, this would be somewhat redundant as this callback just parses and republishes the same information
 
 
