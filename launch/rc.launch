@@ -10,8 +10,8 @@
   <node pkg="rosserial_python" type="serial_node.py"
     args="_port:=$(arg rudder) _baud:=57600" name="rosserial_rudder" output="screen">
   </node>
-  <node pkg="boat_rc" type="sail_autonomy.py"
-    name="autonomy" >
+  <node pkg="boat_rc" type="boat_state_controller_node.py"
+    name="boat_state_controller" >
   </node>
   <node pkg="boat_rc" type="winch_node.py"
     name="winch" >
